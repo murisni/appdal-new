@@ -2,7 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\DTKS;
+use App\Models\HistoriPenerimaan;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
@@ -32,7 +32,7 @@ class RekapitulasiHistori extends Page implements HasTable
     public $bulan;
     public $triwulan = '1';
     public $tahun;
-    public $program = 'pkh'; // Default ke PKH agar histori langsung terfokus
+    public $program = 'semua'; // Default ke 'semua'
 
     public $listTahun = [];
 
@@ -50,14 +50,13 @@ class RekapitulasiHistori extends Page implements HasTable
 
     public function getFilteredQuery(): Builder
     {
-        $query = DTKS::query()->with(['pkh', 'bpnt', 'pbijk', 'atensi']);
+        $query = HistoriPenerimaan::query()->with('dtks');
 
-        // 1. Filter Waktu
         if ($this->tipe_laporan === 'harian' && $this->tanggal_mulai && $this->tanggal_sampai) {
             $sampai = Carbon::parse($this->tanggal_sampai)->endOfDay();
-            $query->whereBetween('created_at', [$this->tanggal_mulai, $sampai]);
+            $query->whereBetween('tanggal_terima', [$this->tanggal_mulai, $sampai]);
         } elseif ($this->tipe_laporan === 'bulanan' && $this->bulan && $this->tahun) {
-            $query->whereMonth('created_at', $this->bulan)->whereYear('created_at', $this->tahun);
+            $query->whereMonth('tanggal_terima', $this->bulan)->whereYear('tanggal_terima', $this->tahun);
         } elseif ($this->tipe_laporan === 'triwulan' && $this->triwulan && $this->tahun) {
             $months = match ($this->triwulan) {
                 '1' => [1, 2, 3],
@@ -66,21 +65,16 @@ class RekapitulasiHistori extends Page implements HasTable
                 '4' => [10, 11, 12],
                 default => [1, 2, 3],
             };
-            $query->whereIn(\DB::raw('MONTH(created_at)'), $months)->whereYear('created_at', $this->tahun);
+            $query->whereIn(\DB::raw('MONTH(tanggal_terima)'), $months)->whereYear('tanggal_terima', $this->tahun);
         } elseif ($this->tipe_laporan === 'tahunan' && $this->tahun) {
-            $query->whereYear('created_at', $this->tahun);
+            $query->whereYear('tanggal_terima', $this->tahun);
         }
 
-        // 2. Filter Program (Wajib memiliki histori agar tidak kosong)
         if ($this->program !== 'semua') {
-            $relasi = $this->program;
-            // Hanya tampilkan KPM yang data bantuannya ada dan berstatus diterima/ditinjau ulang (memiliki histori)
-            $query->whereHas($relasi, function ($q) {
-                $q->whereNotNull('histori_penerimaan');
-            });
+            $query->where('program', $this->program);
         }
 
-        return $query->latest();
+        return $query->latest('tanggal_terima');
     }
 
     public function table(Table $table): Table
@@ -88,11 +82,12 @@ class RekapitulasiHistori extends Page implements HasTable
         return $table
             ->query(fn() => $this->getFilteredQuery())
             ->columns([
-                TextColumn::make('no_kk')->label('No. KK')->searchable(),
+                TextColumn::make('dtks.no_kk')->label('No. KK')->searchable(),
                 TextColumn::make('nama_kpm')
                     ->label('Nama KPM')
                     ->getStateUsing(function ($record) {
-                        $anggota = is_string($record->anggota_keluarga) ? json_decode($record->anggota_keluarga, true) : $record->anggota_keluarga;
+                        if (!$record->dtks) return '-';
+                        $anggota = is_string($record->dtks->anggota_keluarga) ? json_decode($record->dtks->anggota_keluarga, true) : $record->dtks->anggota_keluarga;
                         if (is_array($anggota)) {
                             foreach ($anggota as $a) {
                                 if (isset($a['status_hubungan']) && strtolower($a['status_hubungan']) === 'kepala keluarga') {
@@ -103,49 +98,50 @@ class RekapitulasiHistori extends Page implements HasTable
                         }
                         return '-';
                     })
-                    ->searchable(query: fn(Builder $query, string $search) => $query->where('anggota_keluarga', 'like', "%{$search}%")),
+                    ->searchable(query: fn(Builder $query, string $search) => $query->whereHas('dtks', fn($q) => $q->where('anggota_keluarga', 'like', "%{$search}%"))),
 
-                // Mengambil Histori berdasarkan Program yang difilter
-                TextColumn::make('histori_tanggal')
-                    ->label('Tanggal Penyaluran')
-                    ->html()
-                    ->getStateUsing(function ($record) {
-                        $relasi = $this->program;
-                        if ($relasi === 'semua') return '- Pilih Program -';
+                TextColumn::make('program')
+                    ->label('Program')
+                    ->badge(),
 
-                        $histori = $record->$relasi->histori_penerimaan ?? [];
-                        if (is_string($histori)) $histori = json_decode($histori, true);
+                TextColumn::make('tanggal_terima')
+                    ->label('Tgl Terima')
+                    ->date('d M Y'),
 
-                        if (!empty($histori) && is_array($histori)) {
-                            $tgl = [];
-                            foreach ($histori as $h) {
-                                if (isset($h['tanggal_diterima'])) $tgl[] = Carbon::parse($h['tanggal_diterima'])->translatedFormat('d F Y');
-                            }
-                            return implode('<br>', $tgl);
-                        }
-                        return 'Belum ada histori';
+                TextColumn::make('periode_bantuan')
+                    ->label('Periode')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('nominal_bantuan')
+                    ->label('Nominal')
+                    ->money('IDR')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('lokasi_penyerahan')
+                    ->label('Lokasi')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('petugas_penyerah')
+                    ->label('Petugas')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('status_penerimaan')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'diterima' => 'success',
+                        'tidak' => 'danger',
+                        default => 'gray',
                     }),
 
-                TextColumn::make('histori_catatan')
-                    ->label('Catatan Histori')
-                    ->html()
+                TextColumn::make('catatan_penerimaan')
+                    ->label('Catatan')
                     ->wrap()
-                    ->getStateUsing(function ($record) {
-                        $relasi = $this->program;
-                        if ($relasi === 'semua') return 'Pilih program untuk melihat detail';
+                    ->getStateUsing(fn($record) => $record->catatan_penerimaan ?: '-'),
 
-                        $histori = $record->$relasi->histori_penerimaan ?? [];
-                        if (is_string($histori)) $histori = json_decode($histori, true);
-
-                        if (!empty($histori) && is_array($histori)) {
-                            $catatan = [];
-                            foreach ($histori as $h) {
-                                if (isset($h['catatan'])) $catatan[] = '- ' . $h['catatan'];
-                            }
-                            return implode('<br>', $catatan);
-                        }
-                        return '-';
-                    }),
+                ImageColumn::make('foto_bukti')
+                    ->label('Bukti Foto')
+                    ->square(),
             ])
             ->emptyStateHeading('Tidak ada data histori')
             ->emptyStateDescription('Pilih program bantuan yang memiliki data penyaluran.');

@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 
 Route::get('/', function () {
-    return view('home'); //
+    return view('home');
 })->name('home');
 
 Route::get('/rekapitulasi-pdf/print', [RekapitulasiPdfController::class, 'print'])
@@ -24,35 +24,30 @@ Route::post('/cek-bantuan', function (Request $request) {
         'no_kk' => 'required'
     ]);
 
-    // Cari data berdasarkan No KK (sesuaikan nama kolom no_kk jika berbeda di migration Anda)
     $dtks = DTKS::where('no_kk', $request->no_kk)->first();
 
     if (!$dtks) {
         return response()->json(['status' => 'not_found']);
     }
 
-    // Menentukan Alur (Step) berdasarkan kondisi data DTKS
-    $step = 1; // Default: Input Data (Baru ditinjau)
+    $step = 1;
 
     if ($dtks->isSurveyed()) {
-        $step = 2; // Sudah disurvey lapangan
+        $step = 2;
     }
 
-    // Asumsi jika status sudah diproses/diterima berarti skor sudah dinilai
     if (in_array($dtks->status, [DTKS::STATUS_DIPROSES, DTKS::STATUS_DITERIMA, DTKS::STATUS_DITOLAK])) {
         $step = 3;
     }
 
     if ($dtks->status === DTKS::STATUS_DITERIMA) {
-        $step = 4; // Final: Diterima
+        $step = 4;
     }
 
     return response()->json([
         'status' => 'found',
-        // PERBAIKAN BUG C: Ubah nama_kepala_keluarga menjadi nama (sesuai kolom database/tabel)
         'name' => $dtks->nama ?? 'Keluarga Bpk/Ibu',
         'step' => $step,
-        // PERBAIKAN BUG B: Tambahkan fallback string kosong (?? '') agar ucfirst tidak error jika status null
         'status_text' => ucfirst($dtks->status ?? ''),
         'desil' => $dtks->estimasi_desil,
         'rekomendasi' => $dtks->getRekomendasiBantuan()

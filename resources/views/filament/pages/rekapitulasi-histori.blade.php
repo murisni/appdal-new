@@ -66,15 +66,16 @@
             </div>
             @endif
 
-            {{-- 3. Filter Program (Disesuaikan agar fokus pada histori per program) --}}
+            {{-- 3. Filter Program (Disesuaikan dengan tabel HistoriPenerimaan) --}}
             <div class="flex flex-col gap-2">
-                <label class="text-sm font-medium leading-none text-gray-950 dark:text-white text-primary-600">Program Bantuan (Wajib)</label>
+                <label class="text-sm font-medium leading-none text-gray-950 dark:text-white text-primary-600">Program Bantuan</label>
                 <x-filament::input.wrapper>
                     <x-filament::input.select wire:model.live="program">
-                        <option value="pkh">PKH</option>
-                        <option value="bpnt">BPNT</option>
-                        <option value="pbijk">PBI-JK</option>
-                        <option value="atensi">ATENSI</option>
+                        <option value="semua">Semua Program</option>
+                        <option value="PKH">PKH</option>
+                        <option value="BPNT">BPNT</option>
+                        <option value="PBI-JK">PBI-JK</option>
+                        <option value="ATENSI">ATENSI</option>
                     </x-filament::input.select>
                 </x-filament::input.wrapper>
             </div>

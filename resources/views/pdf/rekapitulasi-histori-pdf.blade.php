@@ -20,18 +20,29 @@
         .ttd-box { float: right; width: 300px; text-align: center; }
         .nama-kadis { margin-top: 60px; font-weight: bold; text-decoration: underline; }
         .foto-bukti { width: 120px; height: auto; object-fit: cover; border: 1px solid #ccc; padding: 2px; }
+        .debug-text { font-size: 9px; color: red; word-break: break-all; margin-top: 5px; display: block; font-style: italic; }
     </style>
 </head>
 <body>
 
     <div class="kop-surat">
-        <img src="{{ public_path('images/logo-kapuas.png') }}" alt="Logo">
+        @php
+            $logoData = null;
+            $logoPath = public_path('images/logo-kapuas.png');
+            if(@file_exists($logoPath)) {
+                $logoData = 'data:image/png;base64,' . base64_encode(@file_get_contents($logoPath));
+            }
+        @endphp
+        @if($logoData)
+            <img src="{{ $logoData }}" alt="Logo">
+        @endif
+        
         <h1>PEMERINTAH KABUPATEN KAPUAS</h1>
         <h2>DINAS SOSIAL</h2>
         <p>Jalan Pemuda Km. 5,5 Kuala Kapuas, Kalimantan Tengah 73514</p>
     </div>
 
-    <div class="judul-laporan">REKAPITULASI HISTORI PENYALURAN BANTUAN PROGRAM {{ strtoupper($program) }}</div>
+    <div class="judul-laporan">REKAPITULASI HISTORI PENYALURAN BANTUAN {{ strtoupper($program === 'semua' ? 'SEMUA PROGRAM' : $program) }}</div>
     
     <div class="info-filter">
         Periode Laporan: 
@@ -47,14 +58,15 @@
             <tr>
                 <th style="width: 5%;">No</th>
                 <th style="width: 25%;">Data Penerima (KPM)</th>
-                <th style="width: 70%;">Jejak Penyaluran / Histori (Tanggal, Catatan, & Bukti Foto)</th>
+                <th style="width: 45%;">Detail Histori & Penyaluran</th>
+                <th style="width: 25%;">Bukti Foto</th>
             </tr>
         </thead>
         <tbody>
             @forelse($records as $index => $row)
             @php
                 // Cari Kepala Keluarga
-                $anggota = is_string($row->anggota_keluarga) ? json_decode($row->anggota_keluarga, true) : $row->anggota_keluarga;
+                $anggota = is_string($row->dtks->anggota_keluarga) ? json_decode($row->dtks->anggota_keluarga, true) : $row->dtks->anggota_keluarga;
                 $namaKpm = '-';
                 if (is_array($anggota)) {
                     foreach ($anggota as $a) {
@@ -63,42 +75,71 @@
                     if($namaKpm === '-') $namaKpm = $anggota[0]['nama'] ?? '-';
                 }
 
-                // Ambil Histori
-                $historiData = $row->$program->histori_penerimaan ?? [];
-                if(is_string($historiData)) $historiData = json_decode($historiData, true);
+                // BYPASS ENGINE: Memaksa baca data mentah (Ignore Permission Block)
+                $imageData = null;
+                $debugMsg = '';
+
+                if (!empty($row->foto_bukti)) {
+                    // Bersihkan karakter aneh barangkali tersimpan sebagai array JSON ["..."]
+                    $cleanPath = trim(str_replace(['"', '[', ']', '\\'], '', $row->foto_bukti));
+                    $cleanPath = ltrim($cleanPath, '/');
+                    $ext = pathinfo($cleanPath, PATHINFO_EXTENSION) ?: 'jpg';
+
+                    try {
+                        // METODE 1: Membaca langsung via Storage Laravel (Cara persis Filament membaca file)
+                        $fileContent = \Illuminate\Support\Facades\Storage::disk('public')->get($cleanPath);
+                        $imageData = 'data:image/' . $ext . ';base64,' . base64_encode($fileContent);
+                    } catch (\Exception $e) {
+                        // METODE 2: Tembak via URL Web langsung (Menduplikasi cara Browser memuat gambar)
+                        try {
+                            $url = asset('storage/' . $cleanPath);
+                            // @ mencegah error menghentikan PDF
+                            $fileContent = @file_get_contents($url); 
+                            
+                            if ($fileContent) {
+                                $imageData = 'data:image/' . $ext . ';base64,' . base64_encode($fileContent);
+                            } else {
+                                $debugMsg = "Gagal memuat dari Storage maupun URL: " . $url;
+                            }
+                        } catch (\Exception $e2) {
+                            $debugMsg = "File corrupt atau tidak ditemukan.";
+                        }
+                    }
+                }
             @endphp
             <tr>
                 <td style="text-align: center;">{{ $index + 1 }}</td>
                 <td>
                     <b>{{ $namaKpm }}</b><br>
-                    No KK: {{ $row->no_kk }}
+                    No KK: {{ $row->dtks->no_kk }}
                 </td>
                 <td>
-                    @if(!empty($historiData) && is_array($historiData))
-                        <table style="width: 100%; border: none; margin: 0;">
-                            @foreach($historiData as $h)
-                            <tr style="border-bottom: 1px dashed #ccc;">
-                                <td style="border: none; width: 60%;">
-                                    <b>Tanggal:</b> {{ isset($h['tanggal_diterima']) ? \Carbon\Carbon::parse($h['tanggal_diterima'])->translatedFormat('d F Y') : '-' }}<br>
-                                    <b>Catatan:</b> {{ $h['catatan'] ?? 'Tidak ada catatan' }}
-                                </td>
-                                <td style="border: none; width: 40%; text-align: center;">
-                                    @if(!empty($h['foto_bukti']))
-                                        <img src="{{ public_path('storage/' . $h['foto_bukti']) }}" class="foto-bukti" alt="Bukti">
-                                    @else
-                                        <i>Tidak ada foto</i>
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                        </table>
+                    @if($program === 'semua')
+                        <b>Program:</b> {{ $row->program }}<br>
+                    @endif
+                    
+                    <b>Tanggal Terima:</b> {{ \Carbon\Carbon::parse($row->tanggal_terima)->translatedFormat('d F Y') }}<br>
+                    @if($row->periode_bantuan) <b>Periode:</b> {{ $row->periode_bantuan }}<br> @endif
+                    @if($row->nominal_bantuan) <b>Nominal:</b> Rp {{ number_format($row->nominal_bantuan, 0, ',', '.') }}<br> @endif
+                    @if($row->lokasi_penyerahan) <b>Lokasi:</b> {{ $row->lokasi_penyerahan }}<br> @endif
+                    @if($row->petugas_penyerah) <b>Petugas:</b> {{ $row->petugas_penyerah }}<br> @endif
+                    
+                    <b>Status:</b> {{ ucfirst($row->status_penerimaan) }}<br>
+                    <b>Catatan:</b> {{ $row->catatan_penerimaan ?? '-' }}
+                </td>
+                <td style="text-align: center;">
+                    @if($imageData)
+                        <img src="{{ $imageData }}" class="foto-bukti" alt="Bukti">
                     @else
-                        <i>Belum ada histori detail.</i>
+                        <i>Tidak ada foto</i>
+                        @if($debugMsg)
+                            <span class="debug-text">{{ $debugMsg }}</span>
+                        @endif
                     @endif
                 </td>
             </tr>
             @empty
-            <tr><td colspan="3" style="text-align: center; padding: 20px;">Tidak ada histori KPM pada program dan periode ini.</td></tr>
+            <tr><td colspan="4" style="text-align: center; padding: 20px;">Tidak ada histori KPM pada program dan periode ini.</td></tr>
             @endforelse
         </tbody>
     </table>

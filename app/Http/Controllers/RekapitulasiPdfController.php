@@ -108,13 +108,14 @@ class RekapitulasiPdfController extends Controller
 
     public function printRekapitulasiHistori(Request $request)
     {
-        $query = \App\Models\DTKS::query()->with(['pkh', 'bpnt', 'pbijk', 'atensi']);
+        // Query langsung dari model HistoriPenerimaan
+        $query = \App\Models\HistoriPenerimaan::query()->with('dtks');
 
         if ($request->tipe_laporan === 'harian' && $request->tanggal_mulai && $request->tanggal_sampai) {
             $sampai = \Carbon\Carbon::parse($request->tanggal_sampai)->endOfDay();
-            $query->whereBetween('created_at', [$request->tanggal_mulai, $sampai]);
+            $query->whereBetween('tanggal_terima', [$request->tanggal_mulai, $sampai]);
         } elseif ($request->tipe_laporan === 'bulanan' && $request->bulan && $request->tahun) {
-            $query->whereMonth('created_at', $request->bulan)->whereYear('created_at', $request->tahun);
+            $query->whereMonth('tanggal_terima', $request->bulan)->whereYear('tanggal_terima', $request->tahun);
         } elseif ($request->tipe_laporan === 'triwulan' && $request->triwulan && $request->tahun) {
             $months = match ($request->triwulan) {
                 '1' => [1, 2, 3],
@@ -123,19 +124,23 @@ class RekapitulasiPdfController extends Controller
                 '4' => [10, 11, 12],
                 default => [1, 2, 3]
             };
-            $query->whereIn(\DB::raw('MONTH(created_at)'), $months)->whereYear('created_at', $request->tahun);
+            $query->whereIn(\DB::raw('MONTH(tanggal_terima)'), $months)->whereYear('tanggal_terima', $request->tahun);
         } elseif ($request->tipe_laporan === 'tahunan' && $request->tahun) {
-            $query->whereYear('created_at', $request->tahun);
+            $query->whereYear('tanggal_terima', $request->tahun);
         }
 
-        $relasi = $request->program;
-        $query->whereHas($relasi, function ($q) {
-            $q->whereNotNull('histori_penerimaan');
-        });
+        // Filter Program
+        if ($request->program !== 'semua') {
+            $query->where('program', $request->program);
+        }
 
-        $records = $query->latest()->get();
+        $records = $query->latest('tanggal_terima')->get();
         $program = $request->program;
 
-        return view('pdf.rekapitulasi-histori-pdf', compact('records', 'program'));
+        // MERENDER MENJADI PDF (Kertas A4, Orientasi Landscape)
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekapitulasi-histori-pdf', compact('records', 'program'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('laporan-histori-bantuan.pdf');
     }
 }

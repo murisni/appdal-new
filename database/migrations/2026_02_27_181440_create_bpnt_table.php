@@ -20,7 +20,6 @@ return new class extends Migration
             $table->text('catatan_peninjau')->nullable();
             $table->text('catatan_surveyor')->nullable();
             $table->text('alasan_tinjauan_kembali')->nullable();
-            $table->json('histori_penerimaan')->nullable();
             $table->string('status_kpm')->default('Aktif');
 
             $table->timestamps();
