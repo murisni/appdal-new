@@ -25,7 +25,6 @@ use App\Models\PKH;
 use App\Models\BPNT;
 use App\Models\PBIJK;
 use App\Models\ATENSI;
-use App\Models\RUTILAHU;
 
 
 class DTKSTable

@@ -284,7 +284,7 @@
 
     <div class="ttd-container">
         <div class="ttd-box">
-            <p>Kuala Kapuas, {{ now()->translatedFormat('d F Y') }}</p>
+            <p>Kuala Kapuas, {{ now()->locale('id')->translatedFormat('d F Y') }}</p>
 
             @if (isset($kepalaDinas))
                 <p>{{ $kepalaDinas->jabatan }}</p>
@@ -300,7 +300,6 @@
                 @endif
 
                 <p class="nama-kadis">{{ $kepalaDinas->nama_lengkap }}</p>
-                <p>{{ $kepalaDinas->pangkat_golongan }}</p>
                 <p>NIP. {{ $kepalaDinas->nip }}</p>
             @else
                 <p>Kepala Dinas Sosial</p>

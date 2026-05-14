@@ -63,6 +63,7 @@ class MeninggalsTable
                 ImageColumn::make('bukti_meninggal')
                     ->label('Bukti')
                     ->circular()
+                    ->disk('public')
                     ->defaultImageUrl(url('/images/no-image.png')),
 
                 TextColumn::make('created_at')

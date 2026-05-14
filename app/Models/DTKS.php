@@ -44,11 +44,6 @@ class DTKS extends Model
         return $this->hasOne(ATENSI::class, 'dtks_id');
     }
 
-    public function rutilahu()
-    {
-        return $this->hasOne(RUTILAHU::class, 'dtks_id');
-    }
-
     public function isSurveyed(): bool
     {
         return !empty($this->latitude) && !empty($this->foto_rumah_depan);
@@ -181,11 +176,6 @@ class DTKS extends Model
         if ($this->ada_lansia_disabilitas) {
             $rekomendasi[] = 'ATENSI';
         }
-
-        // 5. RUTILAHU: Desil 1 (Skor >= 70) dan Lantai Tanah/Bambu
-        // if ($skor >= 70 && in_array($this->jenis_lantai, ['Tanah', 'Bambu'])) {
-        //     $rekomendasi[] = 'RUTILAHU';
-        // }
 
         return $rekomendasi;
     }
