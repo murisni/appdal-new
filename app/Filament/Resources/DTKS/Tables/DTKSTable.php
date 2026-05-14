@@ -263,11 +263,27 @@ class DTKSTable
                             TextInput::make('latitude')->readonly(),
                             TextInput::make('longitude')->readonly(),
                         ]),
+
                         Grid::make(3)->schema([
-                            FileUpload::make('foto_rumah_depan')->image()->directory('rumah'),
-                            FileUpload::make('foto_rumah_tamu')->image()->directory('rumah'),
-                            FileUpload::make('foto_rumah_dapur')->image()->directory('rumah'),
+                            FileUpload::make('foto_rumah_depan')
+                                ->label('Foto Depan')
+                                ->image()
+                                ->directory('rumah')
+                                ->disk('public'),
+
+                            FileUpload::make('foto_rumah_tamu')
+                                ->label('Foto Ruang Tamu')
+                                ->image()
+                                ->directory('rumah')
+                                ->disk('public'),
+
+                            FileUpload::make('foto_rumah_dapur')
+                                ->label('Foto Dapur')
+                                ->image()
+                                ->directory('rumah')
+                                ->disk('public'),
                         ]),
+
                         ToggleButtons::make('status')
                             ->label('Keputusan Akhir')
                             ->options([
@@ -294,8 +310,8 @@ class DTKSTable
                             'latitude' => $data['latitude'],
                             'longitude' => $data['longitude'],
                             'foto_rumah_depan' => $data['foto_rumah_depan'],
-                            'foto_rumah_tamu' => $data['foto_rumah_tamu'] ?? $record->foto_rumah_tamu,
-                            'foto_rumah_dapur' => $data['foto_rumah_dapur'] ?? $record->foto_rumah_dapur,
+                            'foto_rumah_tamu' => $data['foto_rumah_tamu'],
+                            'foto_rumah_dapur' => $data['foto_rumah_dapur'],
                             'status' => $data['status'],
                             'catatan_surveyor' => $data['catatan_surveyor'],
                             // Kita kosongkan alasannya karena proses ulang sudah selesai
