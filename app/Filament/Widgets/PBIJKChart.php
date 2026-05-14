@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class PBIJKChart extends ChartWidget
 {
     protected ?string $heading = 'Proporsi Status PBI-JK';
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 5;
     protected int | string | array $columnSpan = '1';
     protected ?string $maxHeight = '300px';
 

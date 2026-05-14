@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class ATENSIChart extends ChartWidget
 {
     protected ?string $heading = 'Tren Penerima ATENSI';
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 3;
     protected int | string | array $columnSpan = '1';
     protected ?string $maxHeight = '300px';
 

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class BPNTChart extends ChartWidget
 {
     protected ?string $heading = 'Sebaran Status BPNT';
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 4;
     protected int | string | array $columnSpan = '1';
     protected ?string $maxHeight = '300px';
 

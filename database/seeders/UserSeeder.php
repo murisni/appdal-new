@@ -41,7 +41,25 @@ class UserSeeder extends Seeder
         $admin->assignRole('admin');
 
         // 3. Akun User (Kecamatan)
-        $daftarKecamatan = ['Selat', 'Kapuas Hilir', 'Bataguh', 'Basarang'];
+        $daftarKecamatan = [
+            'Basarang',
+            'Bataguh',
+            'Dadahup',
+            'Kapuas Barat',
+            'Kapuas Hilir',
+            'Kapuas Hulu',
+            'Kapuas Kuala',
+            'Kapuas Murung',
+            'Kapuas Tengah',
+            'Kapuas Timur',
+            'Mandau Talawang',
+            'Mantangai',
+            'Pasak Talawang',
+            'Pulau Petak',
+            'Selat',
+            'Tamban Catur',
+            'Timpah'
+        ];
 
         foreach ($daftarKecamatan as $kecamatan) {
             // Format email: selat@gmail.com, kapuas_hilir@gmail.com

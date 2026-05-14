@@ -67,9 +67,9 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 StatsOverview::class,
                 PKHChart::class,
+                ATENSIChart::class,
                 BPNTChart::class,
                 PBIJKChart::class,
-                ATENSIChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,
