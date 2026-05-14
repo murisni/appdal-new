@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DTKS;
 use App\Models\Meninggal;
+use App\Models\KepalaDinas;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -12,6 +13,7 @@ class RekapitulasiPdfController extends Controller
     public function print(Request $request)
     {
         $query = DTKS::query()->with(['pkh', 'bpnt', 'pbijk', 'atensi']);
+        $kepalaDinas = KepalaDinas::where('is_active', true)->first();
 
         // FILTER WAKTU
         if ($request->tipe_laporan === 'harian') {
@@ -51,7 +53,8 @@ class RekapitulasiPdfController extends Controller
         $records = $query->latest()->get();
 
         $pdf = Pdf::loadView('pdf.rekapitulasi-pdf', [
-            'records' => $records
+            'records' => $records,
+            'kepalaDinas' => $kepalaDinas
         ])->setPaper('a4', 'landscape');
 
         return $pdf->stream('rekapitulasi.pdf');
@@ -61,6 +64,7 @@ class RekapitulasiPdfController extends Controller
     {
         // Query dari tabel meninggal langsung, bukan dari DTKS
         $query = Meninggal::query()->with('dtks');
+        $kepalaDinas = KepalaDinas::where('is_active', true)->first();
 
         // Filter Waktu berdasarkan tanggal_meninggal
         if ($request->tipe_laporan === 'harian' && $request->tanggal_mulai && $request->tanggal_sampai) {
@@ -101,6 +105,7 @@ class RekapitulasiPdfController extends Controller
 
         $pdf = Pdf::loadView('pdf.rekapitulasi-meninggal-pdf', [
             'records' => $records,
+            'kepalaDinas' => $kepalaDinas
         ])->setPaper('a4', 'portrait');
 
         return $pdf->stream('rekapitulasi-meninggal.pdf');
@@ -110,6 +115,7 @@ class RekapitulasiPdfController extends Controller
     {
         // Query langsung dari model HistoriPenerimaan
         $query = \App\Models\HistoriPenerimaan::query()->with('dtks');
+        $kepalaDinas = KepalaDinas::where('is_active', true)->first();
 
         if ($request->tipe_laporan === 'harian' && $request->tanggal_mulai && $request->tanggal_sampai) {
             $sampai = \Carbon\Carbon::parse($request->tanggal_sampai)->endOfDay();
@@ -138,7 +144,7 @@ class RekapitulasiPdfController extends Controller
         $program = $request->program;
 
         // MERENDER MENJADI PDF (Kertas A4, Orientasi Landscape)
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekapitulasi-histori-pdf', compact('records', 'program'))
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekapitulasi-histori-pdf', compact('records', 'program', 'kepalaDinas'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->stream('laporan-histori-bantuan.pdf');
