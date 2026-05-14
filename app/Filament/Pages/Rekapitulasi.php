@@ -20,7 +20,7 @@ class Rekapitulasi extends Page implements HasTable
 
     protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-chart-bar';
     protected string $view = 'filament.pages.rekapitulasi';
-    protected static ?string $navigationLabel = 'Laporan Rekapitulasi';
+    protected static ?string $navigationLabel = 'Rekapitulasi Bantuan';
     protected static ?string $pluralModelLabel = 'Rekapitulasi';
     protected static string | UnitEnum | null $navigationGroup = 'Rekapitulasi';
     protected static ?int $navigationSort = 10;

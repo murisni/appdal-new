@@ -21,7 +21,7 @@ class KepalaDinasResource extends Resource
 
     protected static ?string $slug = 'kepaladinas';
 
-    protected static ?string $navigationLabel = 'KEPALA DINAS';
+    protected static ?string $navigationLabel = 'Kepala Dinas';
 
     protected static ?string $pluralModelLabel = 'KEPALA DINAS';
 
