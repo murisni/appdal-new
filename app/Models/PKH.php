@@ -15,6 +15,6 @@ class PKH extends Model
     }
 
     protected $casts = [
-        'histori_penerimaan' => 'array', // Beritahu Laravel ini adalah Array
+        'histori_penerimaan' => 'array',
     ];
 }

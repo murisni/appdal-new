@@ -24,7 +24,7 @@ class RekapitulasiHistori extends Page implements HasTable
     protected static ?string $pluralModelLabel = 'Rekapitulasi Histori';
     protected static string | UnitEnum | null $navigationGroup = 'Rekapitulasi';
     protected static ?int $navigationSort = 12;
-    protected static ?string $title = 'Laporan Histori Penyaluran Bantuan';
+    protected static ?string $title = 'Laporan Histori Penerimaan Bantuan';
 
     public $tipe_laporan = 'bulanan';
     public $tanggal_mulai;
@@ -32,7 +32,7 @@ class RekapitulasiHistori extends Page implements HasTable
     public $bulan;
     public $triwulan = '1';
     public $tahun;
-    public $program = 'semua'; // Default ke 'semua'
+    public $program = 'semua';
 
     public $listTahun = [];
 

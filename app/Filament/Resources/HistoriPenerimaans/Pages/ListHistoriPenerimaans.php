@@ -21,7 +21,6 @@ class ListHistoriPenerimaans extends ListRecords
 {
     protected static string $resource = HistoriPenerimaanResource::class;
 
-    // Properti reaktif Livewire
     public ?string $activeTab = 'semua';
 
     protected function getHeaderActions(): array
@@ -36,7 +35,6 @@ class ListHistoriPenerimaans extends ListRecords
                     default  => 'TAMBAH HISTORI',
                 })
                 ->color('primary')
-                // ->icon('heroicon-o-plus')
                 ->modalHeading(fn() => match ($this->activeTab) {
                     'pkh'    => 'Tambah Histori PKH',
                     'bpnt'   => 'Tambah Histori BPNT',

@@ -39,11 +39,9 @@ class PKHForm
                                     ->searchable()
                                     ->preload()
                                     ->required()
-                                    ->live() // Wajib ada untuk memicu update instan
-                                    // PERUBAHAN 2: Hapus '?string' pada $state agar bisa membaca ID Angka
+                                    ->live()
                                     ->afterStateUpdated(function (Set $set, $state) {
 
-                                        // Jika dikosongkan, kembalikan ke nilai awal
                                         if (!$state) {
                                             $set('jumlah_sd', 0);
                                             $set('jumlah_smp', 0);
@@ -68,7 +66,6 @@ class PKHForm
 
                                                 if (is_array($anggotaKeluarga) && count($anggotaKeluarga) > 0) {
                                                     foreach ($anggotaKeluarga as $anggota) {
-                                                        // Pastikan field tanggal_lahir ada dan tidak kosong
                                                         if (!empty($anggota['tanggal_lahir'])) {
                                                             try {
                                                                 $umur = Carbon::parse($anggota['tanggal_lahir'])->age;
@@ -79,14 +76,12 @@ class PKHForm
                                                                 elseif ($umur >= 16 && $umur <= 18) $sma++;
                                                                 elseif ($umur >= 60) $lansia = true;
                                                             } catch (\Exception $e) {
-                                                                // Abaikan jika format tanggal salah agar form tidak crash
                                                                 continue;
                                                             }
                                                         }
                                                     }
                                                 }
 
-                                                // Inject data ke form (Paksa update form)
                                                 $set('jumlah_sd', $sd);
                                                 $set('jumlah_smp', $smp);
                                                 $set('jumlah_sma', $sma);
@@ -94,7 +89,6 @@ class PKHForm
                                                 $set('lanjut_usia', (bool) ($lansia || $dtks->ada_lansia_disabilitas));
                                                 $set('disabilitas_berat', (bool) $dtks->ada_lansia_disabilitas);
 
-                                                // PERUBAHAN 3: Tampilkan Notifikasi Pop-up Berhasil
                                                 Notification::make()
                                                     ->title('Deteksi Keluarga Berhasil!')
                                                     ->body("Sistem melacak: $sd anak SD, $smp anak SMP, $sma anak SMA. Silakan cek Tab Kriteria PKH.")
@@ -102,7 +96,6 @@ class PKHForm
                                                     ->send();
                                             }
                                         } catch (\Exception $e) {
-                                            // Mencatat error ke log Laravel jika ada yang salah
                                             Log::error('Error saat auto-fill PKH: ' . $e->getMessage());
                                         }
                                     })

@@ -13,7 +13,9 @@ class ListKepalaDinas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('TAMBAH KEPALA DINAS')
+                ->color('danger'),
         ];
     }
 }

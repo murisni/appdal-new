@@ -115,7 +115,6 @@ class ListDTKS extends ListRecords
                                 })
                                 ->live()
                                 ->required(),
-                            // Tidak ada Hidden field — nama & status diambil di action()
                         ]),
 
                     Section::make('Keterangan Meninggal')
@@ -172,7 +171,6 @@ class ListDTKS extends ListRecords
                                 ->live()
                                 ->visible(fn(Get $get) => $get('ada_pengganti'))
                                 ->required(fn(Get $get) => $get('ada_pengganti')),
-                            // Tidak ada Hidden field — nama pengganti diambil di action()
 
                             Select::make('hubungan_pengganti')
                                 ->label('Hubungan dengan Almarhum')
@@ -201,7 +199,6 @@ class ListDTKS extends ListRecords
                         'is_array' => is_array($anggota),
                     ]);
 
-                    // Ambil data almarhum dari DB berdasarkan NIK — 100% andal
                     $namaAlmarhum   = '';
                     $statusHubungan = '';
                     foreach ($anggota as $a) {
@@ -212,7 +209,6 @@ class ListDTKS extends ListRecords
                         }
                     }
 
-                    // Ambil nama pengganti dari DB berdasarkan NIK
                     $namaPengganti = '';
                     if (!empty($data['nik_pengganti'])) {
                         foreach ($anggota as $a) {
@@ -223,14 +219,12 @@ class ListDTKS extends ListRecords
                         }
                     }
 
-                    // Program terdampak
                     $programTerdampak = [];
                     if ($dtks->pkh()->exists())    $programTerdampak[] = 'PKH';
                     if ($dtks->bpnt()->exists())   $programTerdampak[] = 'BPNT';
                     if ($dtks->pbijk()->exists())  $programTerdampak[] = 'PBI-JK';
                     if ($dtks->atensi()->exists()) $programTerdampak[] = 'ATENSI';
 
-                    // Simpan ke tabel meninggal
                     Meninggal::create([
                         'dtks_id'            => $dtks->id,
                         'nama_almarhum'      => $namaAlmarhum,
@@ -245,7 +239,6 @@ class ListDTKS extends ListRecords
                         'program_terdampak'  => $programTerdampak,
                     ]);
 
-                    // Cek apakah masih ada anggota hidup setelah laporan ini
                     $nikSudahMeninggal = $dtks->meninggal()
                         ->pluck('nik_almarhum')
                         ->toArray();
@@ -253,7 +246,6 @@ class ListDTKS extends ListRecords
                         ->filter(fn($a) => !in_array($a['nik'] ?? '', $nikSudahMeninggal))
                         ->isNotEmpty();
 
-                    // Update DTKS
                     $updateDtks = [
                         'status_kpm'        => $masihAdaHidup ? 'Aktif' : 'Meninggal',
                         'tanggal_meninggal' => $data['tanggal_meninggal'],
@@ -266,7 +258,6 @@ class ListDTKS extends ListRecords
                     }
                     $dtks->update($updateDtks);
 
-                    // Sync ke bantuan — HANYA status_kpm
                     $syncData = [
                         'status_kpm' => $masihAdaHidup ? 'Aktif' : 'Meninggal',
                     ];

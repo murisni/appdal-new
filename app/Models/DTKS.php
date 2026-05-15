@@ -19,8 +19,8 @@ class DTKS extends Model
         'longitude' => 'float',
     ];
 
-    const STATUS_DITINJAU = 'ditinjau'; // Saat baru input awal
-    const STATUS_DIPROSES = 'diproses'; // Saat sudah/sedang disurvey
+    const STATUS_DITINJAU = 'ditinjau';
+    const STATUS_DIPROSES = 'diproses';
     const STATUS_DITERIMA = 'diterima';
     const STATUS_DITOLAK  = 'ditolak';
 
@@ -63,31 +63,24 @@ class DTKS extends Model
     {
         $skor = 0;
 
-        // 1. Hitung Total Penghasilan & Penghasilan Per Kapita
         $totalPenghasilan = ($this->penghasilan_per_bulan ?? 0) + ($this->penghasilan_lainnya ?? 0);
 
-        // Ditambah 1 untuk menghitung Kepala Keluarganya juga
         $tanggungan = ($this->jumlah_tanggungan ?? 0) + 1;
 
-        // Rumus keadilan sosial: Total gaji dibagi jumlah orang di rumah
         $penghasilanPerKapita = $totalPenghasilan / $tanggungan;
 
-        // 2. HARD REJECT (Langsung Gugur / 0)
-        // Jika total penghasilan 1 rumah > 4 Juta ATAU daya listrik 2200 VA
         if ($totalPenghasilan > 4000000 || $this->daya_listrik === '2200') {
             return 0;
         }
 
-        // 3. Kriteria Penghasilan Per Kapita (Bobot Terbesar)
         if ($penghasilanPerKapita <= 500000) {
-            $skor += 35; // Sangat miskin (contoh: gaji 1.5jt untuk 4 orang)
+            $skor += 35;
         } elseif ($penghasilanPerKapita <= 1000000) {
-            $skor += 20; // Miskin
+            $skor += 20;
         } elseif ($penghasilanPerKapita <= 1500000) {
-            $skor += 10; // Hampir Miskin
+            $skor += 10;
         }
 
-        // 4. Kriteria Daya Listrik (Cocokkan dengan KEY di Filament)
         if ($this->daya_listrik === 'Non-PLN') {
             $skor += 25;
         } elseif ($this->daya_listrik === '450') {
@@ -95,10 +88,9 @@ class DTKS extends Model
         } elseif ($this->daya_listrik === '900') {
             $skor += 5;
         } elseif ($this->daya_listrik === '1300') {
-            $skor -= 10; // Minus! Dianggap sudah lumayan mampu
+            $skor -= 10;
         }
 
-        // 5. Kriteria Jenis Lantai (Cocokkan dengan KEY di Filament)
         if ($this->jenis_lantai === 'Tanah') {
             $skor += 20;
         } elseif ($this->jenis_lantai === 'Bambu') {
@@ -106,10 +98,9 @@ class DTKS extends Model
         } elseif ($this->jenis_lantai === 'Semen') {
             $skor += 5;
         } elseif ($this->jenis_lantai === 'Keramik') {
-            $skor -= 10; // Minus! Lantai keramik dianggap bukan prioritas utama
+            $skor -= 10;
         }
 
-        // 6. Kriteria Sumber Air (Cocokkan dengan KEY di Filament)
         if ($this->sumber_air === 'Sungai') {
             $skor += 15;
         } elseif ($this->sumber_air === 'Sumur') {
@@ -118,12 +109,10 @@ class DTKS extends Model
             $skor -= 5;
         }
 
-        // 7. Kelompok Rentan & Disabilitas
         if ($this->ada_lansia_disabilitas) {
-            $skor += 15; // Lansia sendirian otomatis dapat poin besar di sini
+            $skor += 15;
         }
 
-        // Pastikan skor tidak bernilai negatif, minimal 0
         return max($skor, 0);
     }
 
@@ -142,17 +131,14 @@ class DTKS extends Model
         $skor = $this->hitungSkorLengkap();
         $rekomendasi = [];
 
-        // 1. PBI-JK (Kesehatan): Untuk Desil 1, 2, 3 (Skor >= 30)
         if ($skor >= 30) {
             $rekomendasi[] = 'PBI-JK';
         }
 
-        // 2. BPNT (Sembako): Untuk Desil 1 & 2 (Skor >= 50)
         if ($skor >= 50) {
             $rekomendasi[] = 'BPNT';
         }
 
-        // 3. PKH: Skor >= 50 DAN Punya Komponen (Balita, Anak Sekolah, atau Lansia/Disabilitas)
         $punyaKomponenPKH = false;
         if (is_array($this->anggota_keluarga)) {
             foreach ($this->anggota_keluarga as $anggota) {

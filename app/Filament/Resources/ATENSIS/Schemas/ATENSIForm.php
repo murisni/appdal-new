@@ -22,7 +22,6 @@ class ATENSIForm
             ->components([
                 Tabs::make('Formulir ATENSI')
                     ->tabs([
-                        // TAB 1: IDENTITAS PENERIMA KHUSUS
                         Tab::make('Penerima')
                             ->icon('heroicon-o-user')
                             ->schema([
@@ -67,7 +66,6 @@ class ATENSIForm
                                     ->required(),
                             ])->columns(2),
 
-                        // TAB 2: DETAIL BANTUAN
                         Tab::make('Detail Bantuan')
                             ->icon('heroicon-o-gift')
                             ->schema([
@@ -83,7 +81,6 @@ class ATENSIForm
                                     ->helperText('Masukkan harga/nilai barang yang diberikan (opsional)'),
                             ]),
 
-                        // TAB 3: VERIFIKASI ASESMEN
                         Tab::make('Verifikasi Asesmen')
                             ->icon('heroicon-m-check-badge')
                             ->schema([

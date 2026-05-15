@@ -169,7 +169,7 @@
         <p>Website: https://dinsos.kapuaskab.go.id Email: dinsos@kapuaskab.go.id</p>
     </div>
 
-    <div class="judul-laporan">REKAPITULASI HISTORI PENYALURAN BANTUAN
+    <div class="judul-laporan">REKAPITULASI HISTORI PENERIMAAN BANTUAN
         {{ strtoupper($program === 'semua' ? 'SEMUA PROGRAM' : $program) }}</div>
 
     <div class="info-filter">

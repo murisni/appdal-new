@@ -149,11 +149,6 @@ class DTKSTable
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                // TextColumn::make('catatan_surveyor')
-                //     ->label('Catatan')
-                //     ->placeholder('Tidak ada catatan')
-                //     ->limit(50)
             ])
             ->filters([
                 //
@@ -194,9 +189,6 @@ class DTKSTable
                         Notification::make()->title('Diteruskan ke Tim Survey')->success()->send();
                     }),
 
-                // =========================================================
-                // 2. TOMBOL SAAT STATUS: SEDANG DISURVEY (BACA CATATAN)
-                // =========================================================
                 Action::make('lihat_catatan')
                     ->label('Catatan Peninjau')
                     ->icon('heroicon-m-document-text')
@@ -223,9 +215,6 @@ class DTKSTable
                         'catatan_peninjau' => $record->catatan_peninjau,
                     ]),
 
-                // =========================================================
-                // 3. TOMBOL SAAT STATUS: SEDANG DISURVEY (INPUT HASIL)
-                // =========================================================
                 Action::make('input_survey')
                     ->label('Input Hasil Survey')
                     ->icon('heroicon-m-map-pin')
@@ -313,16 +302,12 @@ class DTKSTable
                             'foto_rumah_dapur' => $data['foto_rumah_dapur'],
                             'status' => $data['status'],
                             'catatan_surveyor' => $data['catatan_surveyor'],
-                            // Kita kosongkan alasannya karena proses ulang sudah selesai
                             'alasan_tinjauan_kembali' => null,
                             'verified_at' => now(),
                         ]);
                         Notification::make()->title('Data Survey Tersimpan')->success()->send();
                     }),
 
-                // =========================================================
-                // 4. TOMBOL SAAT STATUS: DITERIMA / DITOLAK
-                // =========================================================
                 Action::make('tinjau_kembali')
                     ->label('Tinjau Kembali')
                     ->icon('heroicon-m-arrow-path-rounded-square')
@@ -344,7 +329,7 @@ class DTKSTable
                         ToggleButtons::make('status')
                             ->label('Ubah Status Keputusan')
                             ->options([
-                                'ditinjau' => 'Kembalikan ke Awal (Ditinjau Ulang)', // Opsi baru
+                                'ditinjau' => 'Kembalikan ke Awal (Ditinjau Ulang)',
                                 'diterima' => 'Ubah jadi Diterima',
                                 'ditolak'  => 'Ubah jadi Ditolak',
                             ])
@@ -377,7 +362,6 @@ class DTKSTable
                     }),
 
                 ActionGroup::make([
-                    // ── PKH ──────────────────────────────────────────────
                     Action::make('ajukan_pkh')
                         ->label(
                             fn($record) => $record->pkh()->exists()
@@ -432,7 +416,6 @@ class DTKSTable
                                 ->send();
                         }),
 
-                    // ── BPNT ─────────────────────────────────────────────
                     Action::make('ajukan_bpnt')
                         ->label(
                             fn($record) => $record->bpnt()->exists()
@@ -457,7 +440,6 @@ class DTKSTable
                                 ->send();
                         }),
 
-                    // ── PBI-JK ───────────────────────────────────────────
                     Action::make('ajukan_pbijk')
                         ->label(
                             fn($record) => $record->pbijk()->exists()
@@ -482,7 +464,6 @@ class DTKSTable
                                 ->send();
                         }),
 
-                    // ── ATENSI ───────────────────────────────────────────
                     Action::make('ajukan_atensi')
                         ->label(
                             fn($record) => $record->atensi()->exists()

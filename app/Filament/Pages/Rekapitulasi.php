@@ -91,7 +91,6 @@ class Rekapitulasi extends Page implements HasTable
                 TextColumn::make('no_kk')->label('No. KK')->searchable(),
                 TextColumn::make('nik')->label('NIK')->searchable()->toggleable(isToggledHiddenByDefault: true),
 
-                // MENGAMBIL NAMA KEPALA KELUARGA DARI JSON
                 TextColumn::make('nama_kpm')
                     ->label('Nama Kepala Keluarga')
                     ->getStateUsing(function ($record) {
@@ -102,7 +101,7 @@ class Rekapitulasi extends Page implements HasTable
                                     return $a['nama'];
                                 }
                             }
-                            return $anggota[0]['nama'] ?? '-'; // Jika tidak ada, ambil urutan pertama
+                            return $anggota[0]['nama'] ?? '-';
                         }
                         return '-';
                     })
@@ -111,7 +110,6 @@ class Rekapitulasi extends Page implements HasTable
                         $query->where('anggota_keluarga', 'like', "%{$search}%");
                     }),
 
-                // KOLOM SEMUA PROGRAM
                 TextColumn::make('alamat')->label('Alamat')->limit(30)->visible(fn() => $this->program === 'semua'),
                 TextColumn::make('pkh.status')->label('PKH')->badge()->color(fn($state) => match ($state) {
                     'diterima' => 'success',
@@ -138,7 +136,6 @@ class Rekapitulasi extends Page implements HasTable
                     default => 'gray'
                 })->default('-')->visible(fn() => $this->program === 'semua'),
 
-                // KOLOM PKH
                 IconColumn::make('pkh.ibu_hamil')->label('Bumil')->boolean()->visible(fn() => $this->program === 'pkh'),
                 IconColumn::make('pkh.anak_usia_dini')->label('Balita')->boolean()->visible(fn() => $this->program === 'pkh'),
                 TextColumn::make('pkh.jumlah_sd')->label('SD')->numeric()->visible(fn() => $this->program === 'pkh'),
@@ -146,7 +143,6 @@ class Rekapitulasi extends Page implements HasTable
                 TextColumn::make('pkh.jumlah_sma')->label('SMA')->numeric()->visible(fn() => $this->program === 'pkh'),
                 TextColumn::make('pkh.catatan_surveyor')->label('Catatan Surveyor')->color('danger')->wrap()->visible(fn() => $this->program === 'pkh' && $this->status_verifikasi === 'ditolak'),
 
-                // KOLOM BPNT
                 TextColumn::make('bpnt.no_kartu_kks')->label('No. KKS')->visible(fn() => $this->program === 'bpnt'),
                 TextColumn::make('bpnt.status_pangan')->label('Status Sembako')->badge()->color(fn($state) => match ($state) {
                     'terima' => 'success',
@@ -159,12 +155,10 @@ class Rekapitulasi extends Page implements HasTable
                 })->visible(fn() => $this->program === 'bpnt'),
                 TextColumn::make('bpnt.catatan_surveyor')->label('Catatan Surveyor')->color('danger')->wrap()->visible(fn() => $this->program === 'bpnt' && $this->status_verifikasi === 'ditolak'),
 
-                // KOLOM PBIJK
                 TextColumn::make('pbijk.nomor_bpjs')->label('No. BPJS')->visible(fn() => $this->program === 'pbijk'),
                 TextColumn::make('pbijk.faskes_tingkat_1')->label('Faskes Tkt.1')->visible(fn() => $this->program === 'pbijk'),
                 TextColumn::make('pbijk.catatan_surveyor')->label('Catatan Surveyor')->color('danger')->wrap()->visible(fn() => $this->program === 'pbijk' && $this->status_verifikasi === 'ditolak'),
 
-                // KOLOM ATENSI
                 TextColumn::make('atensi.kategori')->label('Kategori')->badge()->visible(fn() => $this->program === 'atensi'),
                 TextColumn::make('atensi.jenis_bantuan_diterima')->label('Bantuan Diterima')->wrap()->visible(fn() => $this->program === 'atensi'),
                 TextColumn::make('atensi.nominal_bantuan')->label('Nominal')->money('IDR')->visible(fn() => $this->program === 'atensi'),
@@ -191,7 +185,7 @@ class Rekapitulasi extends Page implements HasTable
                         'tahun' => $this->tahun,
                         'program' => $this->program,
                         'status_verifikasi' => $this->status_verifikasi,
-                        'status_kpm' => 'semua', // Hardcode semua karena filternya dihapus
+                        'status_kpm' => 'semua',
                     ]);
 
                     $this->js("window.open('{$url}', '_blank');");

@@ -22,7 +22,6 @@ class BPNTForm
             ->components([
                 Tabs::make('Formulir BPNT')
                     ->tabs([
-                        // TAB 1: DATA KPM (KELUARGA PENERIMA MANFAAT)
                         Tab::make('Data KPM')
                             ->icon('heroicon-m-users')
                             ->schema([
@@ -30,7 +29,7 @@ class BPNTForm
                                     ->label('Pilih Keluarga (No. KK / Nama DTKS)')
                                     ->relationship(
                                         name: 'dtks',
-                                        titleAttribute: 'no_kk', // Ubah ke 'nama' jika Anda ingin mencari berdasarkan nama
+                                        titleAttribute: 'no_kk',
                                         modifyQueryUsing: fn(Builder $query) => $query->where('status', 'diterima')
                                     )
                                     ->searchable()
@@ -39,7 +38,6 @@ class BPNTForm
                                     ->helperText('Hanya menampilkan data DTKS yang statusnya Diterima / Layak.'),
                             ]),
 
-                        // TAB 2: DETAIL BPNT
                         Tab::make('Detail BPNT')
                             ->icon('heroicon-m-credit-card')
                             ->schema([
@@ -64,7 +62,6 @@ class BPNTForm
                                     ->required(),
                             ])->columns(2),
 
-                        // TAB 3: VERIFIKASI SURVEY
                         Tab::make('Verifikasi Survey')
                             ->icon('heroicon-m-check-badge')
                             ->schema([

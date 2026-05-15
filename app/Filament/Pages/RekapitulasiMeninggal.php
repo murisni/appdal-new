@@ -50,10 +50,8 @@ class RekapitulasiMeninggal extends Page implements HasTable
 
     public function getFilteredQuery(): Builder
     {
-        // Query dari tabel meninggal langsung
         $query = Meninggal::query()->with('dtks');
 
-        // Filter waktu berdasarkan tanggal_meninggal
         if ($this->tipe_laporan === 'harian' && $this->tanggal_mulai && $this->tanggal_sampai) {
             $sampai = Carbon::parse($this->tanggal_sampai)->endOfDay();
             $query->whereBetween('tanggal_meninggal', [$this->tanggal_mulai, $sampai]);
@@ -74,7 +72,6 @@ class RekapitulasiMeninggal extends Page implements HasTable
             $query->whereYear('tanggal_meninggal', $this->tahun);
         }
 
-        // Filter program berdasarkan kolom program_terdampak JSON
         if ($this->program !== 'semua') {
             $programLabel = match ($this->program) {
                 'pkh'    => 'PKH',

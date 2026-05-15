@@ -15,7 +15,6 @@ class RekapitulasiPdfController extends Controller
         $query = DTKS::query()->with(['pkh', 'bpnt', 'pbijk', 'atensi']);
         $kepalaDinas = KepalaDinas::where('is_active', true)->first();
 
-        // FILTER WAKTU
         if ($request->tipe_laporan === 'harian') {
             $query->whereDate('created_at', $request->tanggal);
         }
@@ -41,7 +40,6 @@ class RekapitulasiPdfController extends Controller
             $query->whereYear('created_at', $request->tahun);
         }
 
-        // FILTER PROGRAM
         if ($request->program !== 'semua') {
             $query->whereHas($request->program, function ($q) use ($request) {
                 if ($request->status_verifikasi !== 'semua') {
@@ -62,11 +60,9 @@ class RekapitulasiPdfController extends Controller
 
     public function printRekapitulasiMeninggal(Request $request)
     {
-        // Query dari tabel meninggal langsung, bukan dari DTKS
         $query = Meninggal::query()->with('dtks');
         $kepalaDinas = KepalaDinas::where('is_active', true)->first();
 
-        // Filter Waktu berdasarkan tanggal_meninggal
         if ($request->tipe_laporan === 'harian' && $request->tanggal_mulai && $request->tanggal_sampai) {
             $sampai = \Carbon\Carbon::parse($request->tanggal_sampai)->endOfDay();
             $query->whereBetween('tanggal_meninggal', [$request->tanggal_mulai, $sampai]);
@@ -87,7 +83,6 @@ class RekapitulasiPdfController extends Controller
             $query->whereYear('tanggal_meninggal', $request->tahun);
         }
 
-        // Filter Program — cek di kolom program_terdampak JSON
         if ($request->program !== 'semua') {
             $programLabel = match ($request->program) {
                 'pkh'    => 'PKH',
@@ -113,7 +108,6 @@ class RekapitulasiPdfController extends Controller
 
     public function printRekapitulasiHistori(Request $request)
     {
-        // Query langsung dari model HistoriPenerimaan
         $query = \App\Models\HistoriPenerimaan::query()->with('dtks');
         $kepalaDinas = KepalaDinas::where('is_active', true)->first();
 
@@ -135,7 +129,6 @@ class RekapitulasiPdfController extends Controller
             $query->whereYear('tanggal_terima', $request->tahun);
         }
 
-        // Filter Program
         if ($request->program !== 'semua') {
             $query->where('program', $request->program);
         }
@@ -143,7 +136,6 @@ class RekapitulasiPdfController extends Controller
         $records = $query->latest('tanggal_terima')->get();
         $program = $request->program;
 
-        // MERENDER MENJADI PDF (Kertas A4, Orientasi Landscape)
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekapitulasi-histori-pdf', compact('records', 'program', 'kepalaDinas'))
             ->setPaper('a4', 'landscape');
 

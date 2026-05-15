@@ -34,18 +34,16 @@ class PBIJKForm
                                         $dtks = DTKS::find($dtksId);
                                         if (!$dtks || empty($dtks->anggota_keluarga)) return [];
 
-                                        // Pastikan formatnya diubah menjadi array jika terbaca sebagai string
                                         $anggotaKeluarga = is_string($dtks->anggota_keluarga)
                                             ? json_decode($dtks->anggota_keluarga, true)
                                             : $dtks->anggota_keluarga;
 
-                                        // Jika gagal decode / tetap bukan array, kembalikan kosong
                                         if (!is_array($anggotaKeluarga)) return [];
 
                                         $options = [];
                                         foreach ($anggotaKeluarga as $anggota) {
                                             if (!empty($anggota['nama'])) {
-                                                $options[$anggota['nama']] = $anggota['nama']; // Key dan Label sama
+                                                $options[$anggota['nama']] = $anggota['nama'];
                                             }
                                         }
 

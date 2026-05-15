@@ -37,7 +37,6 @@ class PKHSTable
     {
         $user = auth()->user();
 
-        // Buat base query sesuai role
         $baseQuery = fn() => PKH::whereHas('dtks', function ($q) use ($user) {
             if ($user->hasRole('user')) {
                 $q->where('kecamatan', $user->kecamatan);
@@ -261,7 +260,7 @@ class PKHSTable
                             $record->update([
                                 'status' => $data['status'],
                                 'catatan_surveyor' => $data['catatan_surveyor'],
-                                'alasan_tinjauan_kembali' => null, // Kosongkan alasan karena sudah disurvey
+                                'alasan_tinjauan_kembali' => null,
                             ]);
                             Notification::make()->title('Data Survey Tersimpan')->success()->send();
                         }),
