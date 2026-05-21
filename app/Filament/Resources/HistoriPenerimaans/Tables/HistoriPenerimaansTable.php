@@ -83,8 +83,7 @@ class HistoriPenerimaansTable
                 ImageColumn::make('foto_bukti')
                     ->label('Foto Bukti')
                     ->circular()
-                    ->disk('public')
-                    ->defaultImageUrl(url('/images/no-image.png')),
+                    ->disk('public'),
 
                 TextColumn::make('catatan_penerimaan')
                     ->label('Catatan')

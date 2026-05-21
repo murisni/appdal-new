@@ -92,6 +92,7 @@ class HistoriPenerimaanForm
                         FileUpload::make('foto_bukti')
                             ->label('Foto Bukti Penerimaan')
                             ->image()
+                            ->disk('public')
                             ->directory('bukti-penyerahan')
                             ->nullable()
                             ->columnSpanFull(),
